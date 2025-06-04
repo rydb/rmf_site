@@ -15,23 +15,22 @@
  *
 */
 
-use crate::widgets::prelude::*;
-use crate::widgets::{HeaderPanelPlugin, HeaderTilePlugin, StandardCreationPlugin};
-
-use bevy::ecs::{hierarchy::ChildOf, query::Has};
-use bevy::prelude::*;
+use bevy_ecs::{prelude::*, system::SystemParam};
+use bevy_app::prelude::*;
 use bevy_egui::egui::{self, Button, Ui};
 
-/// Add the standard menu bar to the application.
-#[derive(Default)]
-pub struct MenuBarPlugin {}
+use crate::header_panel::*;
+use crate::panel_of_tiles::Tile;
+use crate::*;
 
-impl Plugin for MenuBarPlugin {
+#[derive(Default)]
+pub struct MenuBarBasePlugin;
+
+impl Plugin for MenuBarBasePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             HeaderPanelPlugin::default(),
             MenuDropdownPlugin::default(),
-            StandardCreationPlugin::default(),
         ))
         .add_event::<MenuEvent>()
         .init_resource::<FileMenu>()
@@ -39,7 +38,6 @@ impl Plugin for MenuBarPlugin {
         .init_resource::<ViewMenu>();
     }
 }
-
 /// Add a widget housing all the menu dropdown options
 #[derive(Default)]
 pub struct MenuDropdownPlugin {}
@@ -148,7 +146,7 @@ impl MenuItem {
 
     pub fn checkbox_value_mut(&mut self) -> Option<&mut bool> {
         match self {
-            MenuItem::CheckBox(_, ref mut value) => Some(value),
+            &mut MenuItem::CheckBox(_, ref mut value) => Some(value),
             _ => None,
         }
     }
@@ -282,16 +280,16 @@ pub fn render_sub_menu(
     if let Ok((e, disabled)) = menu_items.get(*entity) {
         // Draw ui
         match e {
-            MenuItem::Text(item) => {
+            &MenuItem::Text(ref item) => {
                 let mut button = Button::new(&item.text);
-                if let Some(ref shortcut) = &item.shortcut {
+                if let Some(shortcut) = &item.shortcut {
                     button = button.shortcut_text(shortcut);
                 }
                 if ui.add_enabled(!disabled, button).clicked() {
                     extension_events.write(MenuEvent::MenuClickEvent(*entity));
                 }
             }
-            MenuItem::CheckBox(title, mut value) => {
+            &MenuItem::CheckBox(ref title, mut value) => {
                 if ui
                     .add_enabled(!disabled, egui::Checkbox::new(&mut value, title))
                     .clicked()

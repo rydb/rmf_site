@@ -7,6 +7,7 @@ pub mod plugins;
 pub mod panel_of_tiles;
 pub mod header_panel;
 pub mod properties_panel;
+pub mod menu_bar;
 
 use bevy_egui::egui::Ui;
 use traits::*;

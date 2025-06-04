@@ -87,8 +87,7 @@ pub use icons::*;
 pub mod inspector;
 pub use inspector::*;
 
-pub mod menu_bar;
-pub use menu_bar::*;
+pub use rmf_site_ui::menu_bar::*;
 
 pub mod move_layer;
 pub use move_layer::*;
@@ -155,6 +154,20 @@ pub mod prelude {
         world::World,
     };
     pub use bevy_egui::egui::Ui;
+}
+
+/// Add the standard menu bar to the application.
+#[derive(Default)]
+pub struct MenuBarPlugin {}
+
+impl Plugin for MenuBarPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins((
+            MenuBarBasePlugin,
+            StandardCreationPlugin::default(),
+        ));
+
+    }
 }
 
 /// This plugins produces the standard properties panel. This is the panel which

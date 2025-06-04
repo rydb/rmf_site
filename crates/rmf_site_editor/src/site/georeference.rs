@@ -2,13 +2,13 @@ use bevy::{asset::AssetPath, math::Ray3d, prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui, EguiContexts};
 use camera_controls::{CameraControls, ProjectionMode};
 use rmf_site_format::{GeographicComponent, GeographicOffset};
+use rmf_site_ui::menu_bar::*;
 use std::collections::HashSet;
 use utm::*;
 
 use crate::{
     generate_map_tiles,
     interaction::camera_controls,
-    widgets::menu_bar::{Menu, MenuDisabled, MenuEvent, MenuItem, ToolMenu, ViewMenu},
     workspace::CurrentWorkspace,
     OSMTile,
 };

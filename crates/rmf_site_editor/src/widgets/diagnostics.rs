@@ -18,7 +18,6 @@
 use crate::{
     site::{Change, FilteredIssueKinds, FilteredIssues, IssueKey},
     widgets::{
-        menu_bar::{MenuEvent, MenuItem, ToolMenu},
         prelude::*,
         SelectorWidget,
     },
@@ -29,7 +28,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::egui::{self, Button, Checkbox, Grid, ImageButton, ScrollArea, Ui};
-use rmf_site_ui::{traits::TryShowWidgetWorld, Widget};
+use rmf_site_ui::{menu_bar::*, traits::TryShowWidgetWorld, Widget};
 
 /// Add a [`Diagnostics`] widget to your application.
 #[derive(Default)]

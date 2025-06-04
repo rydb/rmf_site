@@ -15,9 +15,9 @@
  *
 */
 
-use crate::widgets::{FileMenu, MenuDisabled, MenuEvent, MenuItem, TextMenuItem};
 use crate::{AppState, CreateNewWorkspace, WorkspaceLoader, WorkspaceSaver};
 use bevy::{ecs::hierarchy::ChildOf, prelude::*};
+use rmf_site_ui::menu_bar::*;
 
 #[derive(Default)]
 pub struct WorkspaceMenuPlugin {}

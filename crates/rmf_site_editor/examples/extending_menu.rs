@@ -1,5 +1,6 @@
 use bevy::prelude::*;
-use librmf_site_editor::{widgets::menu_bar::*, SiteEditor};
+use librmf_site_editor::SiteEditor;
+use rmf_site_ui::menu_bar::*;
 
 #[derive(Debug, Default)]
 struct MyMenuPlugin;
