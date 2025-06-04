@@ -5298,6 +5298,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "rmf_site_picking"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_egui",
+ "smallvec",
+ "tracing",
+]
+
+[[package]]
 name = "rmf_site_ui"
 version = "0.1.0"
 dependencies = [
