@@ -78,8 +78,8 @@ use diagnostics::*;
 pub mod fuel_asset_browser;
 pub use fuel_asset_browser::*;
 
-pub mod header_panel;
-pub use header_panel::*;
+pub use rmf_site_ui::header_panel::*;
+
 
 pub mod icons;
 pub use icons::*;
@@ -97,11 +97,10 @@ pub use rmf_site_ui::panel_of_tiles::*;
 
 pub use rmf_site_ui::panel::*;
 
-pub mod properties_panel;
-pub use properties_panel::*;
+pub use rmf_site_ui::properties_panel::*;
 
 pub mod sdf_export_menu;
-use rmf_site_ui::{RenderUiSet, SharedWidget};
+use rmf_site_ui::{plugins::StandardPropertiesPanelPluginBase, properties_panel::PropertiesTilePlugin, RenderUiSet, SharedWidget};
 pub use sdf_export_menu::*;
 
 pub mod selector_widget;
@@ -146,9 +145,9 @@ pub mod prelude {
     //! implementing and inserting their own widgets.
 
     pub use super::{
-        header_panel::*, properties_panel::*, CanvasTooltips, HeaderPanel, Inspect,
-        InspectionPlugin, PanelConfig, PanelSide, PanelWidget, PanelWidgetInput, PropertiesPanel,
-        PropertiesTilePlugin, ShareableWidget, ShowResult, ShowSharedWidget, Tile,
+        CanvasTooltips, HeaderPanel, Inspect,
+        InspectionPlugin, PanelConfig, PanelSide, PanelWidget, PanelWidgetInput,
+        ShareableWidget, ShowResult, ShowSharedWidget, Tile,
         WidgetSystem,
     };
     pub use bevy::ecs::{
@@ -156,6 +155,31 @@ pub mod prelude {
         world::World,
     };
     pub use bevy_egui::egui::Ui;
+}
+
+/// This plugins produces the standard properties panel. This is the panel which
+/// includes widgets to display and edit all the properties in a site that we
+/// expect are needed by common use cases of the editor.
+#[derive(Default)]
+pub struct StandardPropertiesPanelPlugin {}
+
+impl Plugin for StandardPropertiesPanelPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins((
+            StandardPropertiesPanelPluginBase,
+            ViewLevelsPlugin::default(),
+            ViewScenariosPlugin::default(),
+            ViewModelInstancesPlugin::default(),
+            ViewNavGraphsPlugin::default(),
+            ViewLayersPlugin::default(),
+            StandardInspectorPlugin::default(),
+            ViewGroupsPlugin::default(),
+            PropertiesTilePlugin::<ViewTasks>::new(),
+            ViewLightsPlugin::default(),
+            ViewOccupancyPlugin::default(),
+            BuildingPreviewPlugin::default(),
+        ));
+    }
 }
 
 /// This plugin provides the standard UI layout that was designed for the common

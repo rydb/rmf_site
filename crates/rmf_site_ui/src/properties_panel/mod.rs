@@ -15,39 +15,13 @@
  *
 */
 
-use crate::widgets::{
-    BuildingPreviewPlugin, PanelSide, PanelWidget, StandardInspectorPlugin,
-    ViewGroupsPlugin, ViewLayersPlugin, ViewLevelsPlugin, ViewLightsPlugin,
-    ViewModelInstancesPlugin, ViewNavGraphsPlugin, ViewOccupancyPlugin, ViewScenariosPlugin,
-    ViewTasks, WidgetSystem,
-};
-use bevy::{ecs::hierarchy::ChildOf, prelude::*};
-use rmf_site_ui::{panel_of_tiles::{show_panel_of_tiles, Tile}, Widget};
 
-/// This plugins produces the standard properties panel. This is the panel which
-/// includes widgets to display and edit all the properties in a site that we
-/// expect are needed by common use cases of the editor.
-#[derive(Default)]
-pub struct StandardPropertiesPanelPlugin {}
+use bevy_ecs::prelude::*;
+use bevy_app::prelude::*;
+use crate::panel::*;
 
-impl Plugin for StandardPropertiesPanelPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins((
-            PropertiesPanelPlugin::new(PanelSide::Right),
-            ViewLevelsPlugin::default(),
-            ViewScenariosPlugin::default(),
-            ViewModelInstancesPlugin::default(),
-            ViewNavGraphsPlugin::default(),
-            ViewLayersPlugin::default(),
-            StandardInspectorPlugin::default(),
-            ViewGroupsPlugin::default(),
-            PropertiesTilePlugin::<ViewTasks>::new(),
-            ViewLightsPlugin::default(),
-            ViewOccupancyPlugin::default(),
-            BuildingPreviewPlugin::default(),
-        ));
-    }
-}
+use crate::traits::WidgetSystem;
+use crate::{panel_of_tiles::{show_panel_of_tiles, Tile}, Widget};
 
 /// Use this plugin to add a single tile into the properties panel.
 ///

@@ -37,6 +37,7 @@ use bevy_egui::egui::{CollapsingHeader, Ui};
 use futures_lite::future;
 #[cfg(not(target_arch = "wasm32"))]
 use rfd::AsyncFileDialog;
+use rmf_site_ui::properties_panel::PropertiesTilePlugin;
 use std::cmp::Reverse;
 use std::collections::BTreeMap;
 

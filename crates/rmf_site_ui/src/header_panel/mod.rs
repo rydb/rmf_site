@@ -15,12 +15,13 @@
  *
 */
 
-use crate::widgets::{
-    show_panel_of_tiles, PanelConfig, PanelSide, PanelWidget, ScrollConfig, Tile,
-    WidgetSystem,
-};
-use bevy::{ecs::hierarchy::ChildOf, prelude::*};
-use rmf_site_ui::Widget;
+use bevy_app::prelude::*;
+use bevy_ecs::prelude::*;
+use crate::panel_of_tiles::show_panel_of_tiles;
+use crate::*;
+use crate::panel::*;
+
+use crate::{panel_of_tiles::Tile, traits::WidgetSystem};
 
 pub struct HeaderTilePlugin<W>
 where

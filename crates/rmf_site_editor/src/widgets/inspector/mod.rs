@@ -110,7 +110,7 @@ pub use inspect_texture::*;
 
 pub mod inspect_value;
 pub use inspect_value::*;
-use rmf_site_ui::{traits::TryShowWidgetWorld, Widget};
+use rmf_site_ui::{properties_panel::PropertiesPanel, traits::TryShowWidgetWorld, Widget};
 
 use crate::{
     interaction::Selection,
