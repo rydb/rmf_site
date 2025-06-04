@@ -93,8 +93,7 @@ pub use menu_bar::*;
 pub mod move_layer;
 pub use move_layer::*;
 
-pub mod panel_of_tiles;
-pub use panel_of_tiles::*;
+pub use rmf_site_ui::panel_of_tiles::*;
 
 pub use rmf_site_ui::panel::*;
 
@@ -102,7 +101,7 @@ pub mod properties_panel;
 pub use properties_panel::*;
 
 pub mod sdf_export_menu;
-use rmf_site_ui::SharedWidget;
+use rmf_site_ui::{RenderUiSet, SharedWidget};
 pub use sdf_export_menu::*;
 
 pub mod selector_widget;
@@ -196,39 +195,6 @@ impl Plugin for StandardUiPlugin {
             );
     }
 }
-
-/// This gives a convenient function for rendering a widget using a world.
-pub trait ShowSharedWidget {
-    fn show<W, Output, Input>(&mut self, input: Input, ui: &mut Ui) -> Output
-    where
-        W: ShareableWidget + WidgetSystem<Input, Output> + 'static;
-}
-
-impl ShowSharedWidget for World {
-    fn show<W, Output, Input>(&mut self, input: Input, ui: &mut Ui) -> Output
-    where
-        W: ShareableWidget + WidgetSystem<Input, Output> + 'static,
-    {
-        if !self.contains_resource::<SharedWidget<W>>() {
-            let widget = SharedWidget::<W> {
-                state: SystemState::new(self),
-            };
-            self.insert_resource(widget);
-        }
-
-        self.resource_scope::<SharedWidget<W>, Output>(|world, mut widget| {
-            let u = W::show(input, ui, &mut widget.state, world);
-            widget.state.apply(world);
-            u
-        })
-    }
-}
-
-/// This set is for systems that impact rendering the UI using egui. The
-/// [`UserCameraDisplay`] resource waits until after this set is finished before
-/// computing the user camera area.
-#[derive(SystemSet, Hash, PartialEq, Eq, Debug, Clone)]
-pub struct RenderUiSet;
 
 /// This system renders all UI panels in the application and makes sure that the
 /// UI rendering works correctly with the picking system, and any other systems

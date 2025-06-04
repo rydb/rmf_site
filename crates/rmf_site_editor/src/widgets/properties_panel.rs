@@ -16,13 +16,13 @@
 */
 
 use crate::widgets::{
-    show_panel_of_tiles, BuildingPreviewPlugin, PanelSide, PanelWidget, StandardInspectorPlugin,
-    Tile, ViewGroupsPlugin, ViewLayersPlugin, ViewLevelsPlugin, ViewLightsPlugin,
+    BuildingPreviewPlugin, PanelSide, PanelWidget, StandardInspectorPlugin,
+    ViewGroupsPlugin, ViewLayersPlugin, ViewLevelsPlugin, ViewLightsPlugin,
     ViewModelInstancesPlugin, ViewNavGraphsPlugin, ViewOccupancyPlugin, ViewScenariosPlugin,
     ViewTasks, WidgetSystem,
 };
 use bevy::{ecs::hierarchy::ChildOf, prelude::*};
-use rmf_site_ui::Widget;
+use rmf_site_ui::{panel_of_tiles::{show_panel_of_tiles, Tile}, Widget};
 
 /// This plugins produces the standard properties panel. This is the panel which
 /// includes widgets to display and edit all the properties in a site that we

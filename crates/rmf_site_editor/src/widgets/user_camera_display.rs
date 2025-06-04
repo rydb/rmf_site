@@ -16,9 +16,9 @@
 */
 
 use crate::interaction::InteractionState;
-use crate::widgets::RenderUiSet;
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
+use rmf_site_ui::RenderUiSet;
 
 /// This resource keeps track of the region that the user camera display is
 /// occupying in the window.

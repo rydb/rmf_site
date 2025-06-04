@@ -14,13 +14,12 @@
  * limitations under the License.
  *
 */
-
-use crate::widgets::prelude::*;
-
-use bevy::prelude::*;
-use bevy_egui::egui;
-use rmf_site_ui::traits::TryShowWidgetWorld;
+use bevy_egui::egui::{self, Ui};
 use smallvec::SmallVec;
+use bevy_ecs::prelude::*;
+use tracing::error;
+
+use crate::{panel::{PanelConfig, PanelSide, PanelWidgetInput}, traits::TryShowWidgetWorld};
 
 /// Input type for [`WidgetSystem`]s that can be put into a "Panel of Tiles"
 /// widget, such as the [`PropertiesPanel`]. See [`PropertiesTilePlugin`] for a

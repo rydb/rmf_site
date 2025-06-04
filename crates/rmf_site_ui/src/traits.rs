@@ -123,3 +123,30 @@ pub trait WidgetSystem<Input = (), Output = ()>: SystemParam {
 /// [`ShareableWidget`]s can be used by the [`ShowSharedWidget`] trait which is
 /// implemented for the [`World`] struct.
 pub trait ShareableWidget {}
+
+/// This gives a convenient function for rendering a widget using a world.
+pub trait ShowSharedWidget {
+    fn show<W, Output, Input>(&mut self, input: Input, ui: &mut Ui) -> Output
+    where
+        W: ShareableWidget + WidgetSystem<Input, Output> + 'static;
+}
+
+impl ShowSharedWidget for World {
+    fn show<W, Output, Input>(&mut self, input: Input, ui: &mut Ui) -> Output
+    where
+        W: ShareableWidget + WidgetSystem<Input, Output> + 'static,
+    {
+        if !self.contains_resource::<SharedWidget<W>>() {
+            let widget = SharedWidget::<W> {
+                state: SystemState::new(self),
+            };
+            self.insert_resource(widget);
+        }
+
+        self.resource_scope::<SharedWidget<W>, Output>(|world, mut widget| {
+            let u = W::show(input, ui, &mut widget.state, world);
+            widget.state.apply(world);
+            u
+        })
+    }
+}

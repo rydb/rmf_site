@@ -3,6 +3,8 @@ use bevy_ecs::{prelude::*, system::{SystemParam, SystemState}};
 
 pub mod panel;
 pub mod traits;
+pub mod plugins;
+pub mod panel_of_tiles;
 
 use bevy_egui::egui::Ui;
 use traits::*;
@@ -69,6 +71,12 @@ where
         u
     }
 }
+
+/// This set is for systems that impact rendering the UI using egui. The
+/// [`UserCameraDisplay`] resource waits until after this set is finished before
+/// computing the user camera area.
+#[derive(SystemSet, Hash, PartialEq, Eq, Debug, Clone)]
+pub struct RenderUiSet;
 
 /// A resource to store a widget so that it can be reused multiple times in one
 /// render pass.

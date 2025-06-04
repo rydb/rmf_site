@@ -18,13 +18,14 @@
 use crate::{
     interaction::{Select, Selection},
     site::*,
-    Tile, WidgetSystem,
+    WidgetSystem,
 };
 use bevy::{
     ecs::system::{SystemParam, SystemState},
     prelude::*,
 };
 use bevy_egui::egui::{CollapsingHeader, Color32, Frame, Stroke, Ui};
+use rmf_site_ui::panel_of_tiles::Tile;
 
 #[derive(SystemParam)]
 pub struct ViewTasks<'w, 's> {
