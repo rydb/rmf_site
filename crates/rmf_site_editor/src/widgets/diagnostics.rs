@@ -29,6 +29,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::egui::{self, Button, Checkbox, Grid, ImageButton, ScrollArea, Ui};
+use rmf_site_ui::{traits::TryShowWidgetWorld, Widget};
 
 /// Add a [`Diagnostics`] widget to your application.
 #[derive(Default)]

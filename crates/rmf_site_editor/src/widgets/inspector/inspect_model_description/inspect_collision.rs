@@ -31,6 +31,7 @@ use bevy::color::palettes::css as Colors;
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{DragValue, Grid, Ui};
 use rmf_site_format::Recall;
+use rmf_site_ui::traits::TryShowWidgetWorld;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
 use smallvec::SmallVec;

@@ -19,6 +19,7 @@ use crate::widgets::prelude::*;
 
 use bevy::prelude::*;
 use bevy_egui::egui;
+use rmf_site_ui::traits::TryShowWidgetWorld;
 use smallvec::SmallVec;
 
 /// Input type for [`WidgetSystem`]s that can be put into a "Panel of Tiles"

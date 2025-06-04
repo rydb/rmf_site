@@ -30,6 +30,7 @@ use bevy::{
     prelude::{Component, *},
 };
 use bevy_egui::egui::{ComboBox, Ui};
+use rmf_site_ui::{traits::TryShowWidgetWorld, Widget};
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::{Error, Map, Value};
 use smallvec::SmallVec;
