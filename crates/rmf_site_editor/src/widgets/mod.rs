@@ -69,8 +69,8 @@ use console::*;
 pub mod creation;
 use creation::*;
 
-pub mod canvas_tooltips;
-pub use canvas_tooltips::*;
+
+pub use rmf_site_ui::canvas_tooltips::*;
 
 pub mod diagnostics;
 use diagnostics::*;
