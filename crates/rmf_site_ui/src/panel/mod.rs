@@ -15,14 +15,13 @@
  *
 */
 
-use bevy::{
-    ecs::system::{BoxedSystem, SystemState},
-    prelude::*,
-};
+use bevy_ecs::{prelude::*, system::{BoxedSystem, SystemState}};
+
 use bevy_egui::{
     egui::{self, Ui},
     EguiContexts,
 };
+
 use smallvec::SmallVec;
 
 /// To create a panel widget (a widget that renders itself directly to one of

@@ -95,8 +95,7 @@ pub use move_layer::*;
 pub mod panel_of_tiles;
 pub use panel_of_tiles::*;
 
-pub mod panel;
-pub use panel::*;
+pub use rmf_site_ui::panel::*;
 
 pub mod properties_panel;
 pub use properties_panel::*;

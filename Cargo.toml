@@ -25,6 +25,7 @@ serde = { version = "1.0" }
 
 rmf_site_format = { path = "crates/rmf_site_format" }
 rmf_site_editor = { path = "crates/rmf_site_editor" }
+rmf_site_ui = {path = "crates/rmf_site_ui"}
 
 serde_yaml = "0.8.23"
 serde_json = "*"
