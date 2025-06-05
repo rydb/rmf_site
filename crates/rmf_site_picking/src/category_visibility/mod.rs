@@ -15,9 +15,13 @@
  *
 */
 
-use bevy::prelude::*;
+use bevy_ecs::prelude::*;
+use bevy_state::prelude::*;
+use bevy_app::prelude::*;
+use bevy_render::prelude::*;
 
-use crate::interaction::InteractionState;
+use crate::*;
+
 use std::fmt::Debug;
 
 #[derive(Resource, Clone, Debug)]

@@ -30,8 +30,9 @@ pub use assets::*;
 pub mod camera_controls;
 pub use camera_controls::*;
 
-pub mod category_visibility;
-pub use category_visibility::*;
+pub use rmf_site_picking::*;
+
+pub use rmf_site_picking::category_visibility::*;
 
 pub mod cursor;
 pub use cursor::*;
@@ -102,12 +103,6 @@ impl InteractionPlugin {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, States)]
-pub enum InteractionState {
-    Enable,
-    #[default]
-    Disable,
-}
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum InteractionUpdateSet {

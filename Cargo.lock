@@ -5313,6 +5313,7 @@ dependencies = [
  "bevy_input",
  "bevy_picking",
  "bevy_render",
+ "bevy_state",
  "bevy_transform",
  "bitfield 0.15.0",
  "smallvec",

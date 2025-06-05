@@ -15,6 +15,7 @@ bevy_transform = {workspace = true}
 bevy_picking = {workspace = true}
 bitfield = {workspace = true}
 bevy_render = {workspace = true}
+bevy_state = {workspace = true}
 
 [dev-dependencies]
 bevy = {workspace = true, features = ["dynamic_linking"]}
