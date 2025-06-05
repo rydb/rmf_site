@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy_egui = {workspace = true}
 bevy_ecs = {workspace = true}
 bevy_app = {workspace = true}
 smallvec = {workspace = true}
@@ -13,3 +12,11 @@ tracing = {workspace = true}
 [dev-dependencies]
 bevy = {workspace = true, features = ["dynamic_linking"]}
 bevy-inspector-egui = "*"
+
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+bevy_egui = {workspace = true}
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# (rydb) no turning of default features post port due to workspace complaining. Will need to see what needs to be fixed after pulling that off.
+bevy_egui = { workspace = true, features = ["open_url", "default_fonts", "render"] }

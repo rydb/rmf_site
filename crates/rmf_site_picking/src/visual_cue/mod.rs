@@ -15,10 +15,20 @@
  *
 */
 
-use crate::interaction::{VISUAL_CUE_RENDER_LAYER, XRAY_RENDER_LAYER};
-use bevy::{prelude::*, render::view::visibility::RenderLayers};
+use bevy_render::view::RenderLayers;
+use bevy_derive::{Deref, DerefMut};
 use bitfield::bitfield;
 use smallvec::SmallVec;
+
+use bevy_ecs::prelude::*;
+
+/// The Visual Cue layer is for things that should be shown to the user but
+/// should never appear in a physical camera.
+pub const VISUAL_CUE_RENDER_LAYER: usize = 2;
+
+/// The X-Ray layer is used to show visual cues that need to be rendered
+/// above anything that would be obstructing them.
+pub const XRAY_RENDER_LAYER: usize = 5;
 
 bitfield! {
     #[derive(Copy, Clone)]

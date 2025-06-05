@@ -17,6 +17,7 @@
 
 use crate::interaction::*;
 use bevy::{picking::pointer::PointerInteraction, prelude::*};
+use rmf_site_picking::visual_cue::ComputedVisualCue;
 
 /// A resource to track what kind of picking blockers are currently active
 #[derive(Resource)]

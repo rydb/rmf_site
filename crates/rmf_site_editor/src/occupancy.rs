@@ -16,7 +16,6 @@
 */
 
 use crate::{
-    interaction::ComputedVisualCue,
     shapes::*,
     site::{Category, LevelElevation, NameOfSite, SiteAssets, LANE_LAYER_START},
 };
@@ -30,6 +29,7 @@ use bevy::{
     },
 };
 use itertools::Itertools;
+use rmf_site_picking::visual_cue::ComputedVisualCue;
 use std::{
     collections::{HashMap, HashSet},
     time::Instant,

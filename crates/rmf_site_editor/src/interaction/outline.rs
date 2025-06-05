@@ -25,6 +25,7 @@ use rmf_site_format::{
     DoorType, FiducialMarker, FloorMarker, LiftCabin, LightKind, LocationTags, MeasurementMarker,
     ModelMarker, PhysicalCameraProperties, PrimitiveShape, WallMarker,
 };
+use rmf_site_picking::visual_cue::ComputedVisualCue;
 use smallvec::SmallVec;
 
 // TODO(MXG): Customize the behavior of floor, wall, and model visual cues.

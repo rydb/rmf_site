@@ -81,8 +81,7 @@ pub use preview::*;
 pub mod select;
 pub use select::*;
 
-pub mod visual_cue;
-pub use visual_cue::*;
+pub use rmf_site_picking::visual_cue::*;
 
 use bevy::prelude::*;
 use bevy_mod_outline::OutlinePlugin;

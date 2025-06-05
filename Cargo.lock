@@ -5251,6 +5251,7 @@ dependencies = [
  "pathdiff",
  "rfd",
  "rmf_site_format",
+ "rmf_site_picking",
  "rmf_site_ui",
  "sdformat_rs",
  "serde",
@@ -5301,11 +5302,19 @@ dependencies = [
 name = "rmf_site_picking"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bevy",
  "bevy-inspector-egui",
  "bevy_app",
+ "bevy_derive",
  "bevy_ecs",
  "bevy_egui",
+ "bevy_impulse",
+ "bevy_input",
+ "bevy_picking",
+ "bevy_render",
+ "bevy_transform",
+ "bitfield 0.15.0",
  "smallvec",
  "tracing",
 ]
