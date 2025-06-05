@@ -33,6 +33,7 @@ thiserror = {workspace = true}
 rmf_site_format = { workspace = true, features = ["bevy"] }
 rmf_site_ui = {workspace = true}
 rmf_site_picking = {workspace = true}
+rmf_site_camera = {workspace = true}
 itertools = {workspace = true}
 bitfield = {workspace = true}
 crossbeam-channel = {workspace = true}

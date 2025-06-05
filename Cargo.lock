@@ -5227,6 +5227,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "rmf_site_camera"
+version = "0.1.0"
+
+[[package]]
 name = "rmf_site_editor"
 version = "0.0.1"
 dependencies = [
@@ -5250,6 +5254,7 @@ dependencies = [
  "nalgebra",
  "pathdiff",
  "rfd",
+ "rmf_site_camera",
  "rmf_site_format",
  "rmf_site_picking",
  "rmf_site_ui",
