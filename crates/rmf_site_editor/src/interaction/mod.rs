@@ -67,8 +67,7 @@ pub use outline::*;
 pub mod path;
 pub use path::*;
 
-pub mod picking;
-pub use picking::*;
+pub use rmf_site_picking::picking::*;
 
 pub mod point;
 pub use point::*;
