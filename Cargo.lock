@@ -5227,6 +5227,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "rmf_site_assets"
+version = "0.1.0"
+
+[[package]]
 name = "rmf_site_camera"
 version = "0.1.0"
 
