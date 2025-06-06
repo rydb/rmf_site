@@ -3,6 +3,7 @@ use bevy_state::state::States;
 pub mod visual_cue;
 pub mod category_visibility;
 pub mod picking;
+pub mod select;
 
 use bevy_ecs::prelude::*;
 

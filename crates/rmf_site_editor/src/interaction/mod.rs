@@ -80,6 +80,8 @@ pub use preview::*;
 
 pub mod select;
 pub use select::*;
+pub use rmf_site_picking::select::*;
+
 
 pub use rmf_site_picking::visual_cue::*;
 
