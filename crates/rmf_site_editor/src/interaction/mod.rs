@@ -27,8 +27,10 @@ pub use anchor::*;
 pub mod assets;
 pub use assets::*;
 
-pub mod camera_controls;
-pub use camera_controls::*;
+// pub mod camera_controls;
+// pub use camera_controls::*;
+
+pub use rmf_site_camera::*;
 
 pub use rmf_site_picking::*;
 
