@@ -24,6 +24,7 @@ use bevy::{
     },
     prelude::*,
 };
+use rmf_site_camera::{components::{OrthographicCameraRoot, PerspectiveCameraRoot}, resources::ProjectionMode};
 use rmf_site_format::Pose;
 
 #[derive(Debug, Clone, Copy)]
@@ -399,7 +400,7 @@ pub fn update_gizmo_release(
 pub fn update_drag_motions(
     drag_axis: Query<(&DragAxis, &Draggable, &GlobalTransform), Without<DragPlane>>,
     drag_plane: Query<(&DragPlane, &Draggable, &GlobalTransform), Without<DragAxis>>,
-    camera_controls: Res<CameraControls>,
+    active_camera: ActiveCameraQuery,
     drag_state: Res<GizmoState>,
     mut cursor_motion: EventReader<CursorMoved>,
     mut move_to: EventWriter<MoveTo>,
@@ -413,7 +414,9 @@ pub fn update_drag_motions(
             }
         };
 
-        let active_camera = camera_controls.active_camera();
+        let Ok(active_camera) = active_camera_maybe(&active_camera) else {
+            return
+        };
         let Some((_, ray)) = ray_map.iter().find(|(id, _)| id.camera == active_camera) else {
             return;
         };

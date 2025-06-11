@@ -1,12 +1,11 @@
 use crate::{components::*, resources::*, *};
 
+use bevy_asset::Assets;
 use bevy_ecs::prelude::*;
 use bevy_app::prelude::*;
+use bevy_render::view::visibility;
 use tracing::warn;
 
-pub fn init_camera_orbit_material() {
-
-}
 
 pub fn init_cameras(
     camera_control_mesh: Res<CameraControlMesh>,
@@ -167,8 +166,9 @@ pub fn change_projection_mode(
 pub fn toggle_headlights(
     headlight_toggle: Res<HeadlightToggle>,
     projection_mode: Res<ProjectionMode>,
-    mut perspective_headlights: Query<(Entity, &mut Visibility), With<PerspectiveHeadlightTarget>>,
-    mut orthographic_headlights: Query<(Entity, &mut Visibility), With<OrthographicHeadlightTarget>>
+    mut visibility: Query<&mut Visibility>,
+    mut perspective_headlights: Query<Entity, With<PerspectiveHeadlightTarget>>,
+    mut orthographic_headlights: Query<Entity, With<PerspectiveHeadlightTarget>>
 ) {
     let targets = match *projection_mode {
         ProjectionMode::Perspective => {
@@ -176,15 +176,16 @@ pub fn toggle_headlights(
         },
         ProjectionMode::Orthographic => orthographic_headlights.iter_mut().collect::<Vec<_>>(),
     };
-
-    for (_, mut visibility) in targets {
-        if headlight_toggle.0 {
-            *visibility = Visibility::Inherited
-        } else {
-            *visibility = Visibility::Hidden
+    for target in targets {
+        if let Ok(mut visibility) = visibility.get_mut(target) {
+            if headlight_toggle.0 {
+                *visibility = Visibility::Inherited
+            } else {
+                *visibility = Visibility::Hidden
+            }
         }
     }
-};
+}
 
 pub fn camera_controls(
     mut cursor_command: ResMut<CursorCommand>,
@@ -222,56 +223,78 @@ pub fn camera_controls(
 
     match *projection_mode {
         ProjectionMode::Perspective => {
-            let Ok((e, children)) = perspective_cam_root.single_mut()
+            let Ok((e, children)) = perspective_cam_root.single()
             .inspect_err(|err| warn!("could not get perspective cam entity due to: {:#}", err)) else {
                 return;
             };
-            let Ok((mut persp_proj, mut persp_transform)) = cameras.get_mut(e)
-            .inspect_err(|err| warn!("could not get perspective cam components due to {:#}", err)) else {
-                return
-            };
-            if let Projection::Perspective(persp_proj) = persp_proj.as_mut() {
-                persp_transform.translation += translation_delta;
-                persp_transform.rotation *= rotation_delta;
-                persp_proj.fov += fov_delta;
-                persp_proj.fov = persp_proj
-                    .fov
-                    .clamp(MIN_FOV.to_radians(), MAX_FOV.to_radians());
+            
+            let new_child_proj = {
+                let Ok((mut persp_proj, mut persp_transform)) = cameras.get_mut(e)
+                .inspect_err(|err| warn!("could not get perspective cam components due to {:#}", err)) else {
+                    return
+                };
+                if let Projection::Perspective(persp_proj) = persp_proj.as_mut() {
+                    persp_transform.translation += translation_delta;
+                    persp_transform.rotation *= rotation_delta;
+                    persp_proj.fov += fov_delta;
+                    persp_proj.fov = persp_proj
+                        .fov
+                        .clamp(MIN_FOV.to_radians(), MAX_FOV.to_radians());
 
-                // Ensure upright
-                let forward = persp_transform.forward();
-                persp_transform.look_to(*forward, Vec3::Z);
-            }
+                    // Ensure upright
+                    let forward = persp_transform.forward();
+                    persp_transform.look_to(*forward, Vec3::Z);
+                }
+                persp_proj.clone()
+            };
+
+
             
             let valid_children = children.iter()
-            .filter_map(|n| cameras.get_mut(e).ok()).collect::<Vec<_>>();
+            .filter(|n| cameras.contains(*n)).collect::<Vec<_>>();
 
-            for (mut child_proj, _) in valid_children.iter() {
-                *child_proj = persp_proj.clone();
+            for child in &valid_children {
+                if let Ok((mut child_proj, _)) = cameras.get_mut(*child) {
+                    *child_proj = new_child_proj.clone();
+                }
             }
         },
         ProjectionMode::Orthographic => {
-            let (mut ortho_proj, mut ortho_transform) = cameras
-                .get_mut(controls.orthographic_camera_entities[0])
-                .unwrap();
-            if let Projection::Orthographic(ortho_proj) = ortho_proj.as_mut() {
-                ortho_transform.translation += translation_delta;
-                ortho_transform.rotation *= rotation_delta;
-                ortho_proj.scale += scale_delta;
-            }
+            let Ok((e, children)) = orthographic_cam_root.single()
+            .inspect_err(|err| warn!("could not get perspective cam entity due to: {:#}", err)) else {
+                return;
+            };
+            
+            let new_child_proj = {
+                let Ok((mut ortho_proj, mut ortho_transform)) = cameras.get_mut(e)
+                .inspect_err(|err| warn!("could not get perspective cam components due to {:#}", err)) else {
+                    return
+                };
+                
+                if let Projection::Orthographic(ortho_proj) = ortho_proj.as_mut() {
+                    ortho_transform.translation += translation_delta;
+                    ortho_transform.rotation *= rotation_delta;
+                    ortho_proj.scale += scale_delta;
+                }
 
-            let proj = ortho_proj.clone();
-            let children = cameras
-                .get_many_mut(controls.orthographic_camera_entities)
-                .unwrap();
-            for (mut child_proj, _) in children {
-                *child_proj = proj.clone();
+                ortho_proj.clone()
+            };
+
+            let valid_children = children.iter()
+            .filter(|n| cameras.contains(*n)).collect::<Vec<_>>();
+
+            for child in &valid_children {
+                if let Ok((mut child_proj, _)) = cameras.get_mut(*child) {
+                    *child_proj = new_child_proj.clone();
+                }
             }
         },
     }
 }
 pub fn update_orbit_center_marker(
-    camera: Single<(&CameraControls, &ProjectionMode)>,
+    //camera: Single<(&CameraControls, &ProjectionMode)>,
+    controls: Res<CameraControls>,
+    projection_mode: Res<ProjectionMode>,
     keyboard_command: Res<KeyboardCommand>,
     cursor_command: Res<CursorCommand>,
     camera_orbit_mat: Res<CameraOrbitMat>,
@@ -286,7 +309,7 @@ pub fn update_orbit_center_marker(
         Without<Projection>,
     >,
 ) {
-    let (controls, mode) = *camera;
+    //let (controls, mode) = *camera_controls;
     let Ok((mut marker_transform, mut marker_visibility, mut marker_material, _)) = marker_query
     .single_mut() 
     .inspect_err(|err| {
@@ -296,10 +319,10 @@ pub fn update_orbit_center_marker(
         return;
     };
 
-    // Orbitting
+    // Orbiting
     if (cursor_command.command_type == CameraCommandType::Orbit
         || keyboard_command.command_type == CameraCommandType::Orbit)
-        && mode == &ProjectionMode::Perspective
+        && *projection_mode == ProjectionMode::Perspective
     {
         if let Some(orbit_center) = controls.orbit_center {
             *marker_visibility = Visibility::Visible;

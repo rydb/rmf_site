@@ -15,6 +15,8 @@
  *
 */
 
+use crate::components::{OrthographicCameraRoot, PerspectiveCameraRoot};
+
 use super::{
     get_groundplane_else_default_selection, orbit_camera_around_point, zoom_distance_factor,
     CameraCommandType, CameraControls, ProjectionMode, MAX_FOV, MAX_SCALE, MIN_FOV, MIN_SCALE,
@@ -30,6 +32,7 @@ use bevy_render::prelude::*;
 use bevy_transform::components::{GlobalTransform, Transform};
 use bevy_window::{PrimaryWindow, Window};
 use nalgebra::{Matrix3, Matrix3x1};
+use tracing::warn;
 
 pub const SCALE_ZOOM_SENSITIVITY: f32 = 0.1;
 pub const TRANSLATION_ZOOM_SENSITIVITY: f32 = 0.2;
@@ -83,8 +86,11 @@ pub fn update_cursor_command(
     mut cursor_command: ResMut<CursorCommand>,
     mut mouse_wheel: EventReader<MouseWheel>,
     mouse_input: Res<ButtonInput<MouseButton>>,
+    projection_mode: Res<ProjectionMode>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     pointers: Query<(&PointerId, &PointerInteraction)>,
+    ortho_cam: Query<Entity, With<OrthographicCameraRoot>>,
+    persp_cam: Query<Entity, With<PerspectiveCameraRoot>>,
     ray_map: Res<RayMap>,
     cameras: Query<(&Projection, &Transform, &GlobalTransform)>,
     primary_windows: Query<&Window, With<PrimaryWindow>>,
@@ -110,7 +116,7 @@ pub fn update_cursor_command(
             &keyboard_input,
             &mouse_input,
             &scroll_motion,
-            camera_controls.mode(),
+            *projection_mode,
         );
         if command_type == CameraCommandType::Inactive {
             *cursor_command = CursorCommand::default();
@@ -118,10 +124,16 @@ pub fn update_cursor_command(
         }
 
         // Camera projection and transform
-        let active_camera_entity = match camera_controls.mode() {
-            ProjectionMode::Orthographic => camera_controls.orthographic_camera_entities[0],
-            ProjectionMode::Perspective => camera_controls.perspective_camera_entities[0],
+        let active_camera_entity = match *projection_mode {
+            ProjectionMode::Orthographic => ortho_cam.single(),
+            ProjectionMode::Perspective => persp_cam.single(),
         };
+
+        let Ok(active_camera_entity) = active_camera_entity
+        .inspect_err(|err| warn!("could not update cursor command due to {:#}", err)) else {
+            return
+        };
+
         let (camera_proj, camera_transform, _) = cameras.get(active_camera_entity).unwrap();
 
         // Get selection under cursor, cursor direction
@@ -160,7 +172,7 @@ pub fn update_cursor_command(
         }
         let orbit_center = camera_controls.orbit_center.unwrap_or(cursor_selection);
 
-        match camera_controls.mode() {
+        match *projection_mode {
             ProjectionMode::Orthographic => {
                 if let Projection::Orthographic(camera_proj) = camera_proj {
                     *cursor_command = get_orthographic_cursor_command(
@@ -417,10 +429,10 @@ fn get_command_type(
     }
 
     // Zoom
-    if projection_mode.is_orthographic() && is_scrolling {
+    if projection_mode == ProjectionMode::Orthographic && is_scrolling {
         return CameraCommandType::ScaleZoom;
     }
-    if projection_mode.is_perspective() && is_scrolling {
+    if projection_mode == ProjectionMode::Perspective && is_scrolling {
         if is_shifting {
             return CameraCommandType::FovZoom;
         } else {

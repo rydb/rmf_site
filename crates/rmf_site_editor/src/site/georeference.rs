@@ -1,6 +1,6 @@
 use bevy::{asset::AssetPath, math::Ray3d, prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui, EguiContexts};
-use camera_controls::{CameraControls, ProjectionMode};
+use rmf_site_camera::{active_camera_maybe, resources::ProjectionMode, ActiveCameraQuery, CameraControls};
 use rmf_site_format::{GeographicComponent, GeographicOffset};
 use rmf_site_ui::menu_bar::*;
 use std::collections::HashSet;
@@ -8,7 +8,6 @@ use utm::*;
 
 use crate::{
     generate_map_tiles,
-    interaction::camera_controls,
     workspace::CurrentWorkspace,
     OSMTile,
 };
@@ -369,6 +368,7 @@ pub fn render_map_tiles(
     map_tiles: Query<(Entity, &MapTile)>,
     cameras: Query<(&Camera, &GlobalTransform)>,
     camera_controls: Res<CameraControls>,
+    active_cam: ActiveCameraQuery,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
@@ -402,11 +402,10 @@ pub fn render_map_tiles(
                 return;
             }
 
-            let cam_entity = match camera_controls.mode() {
-                ProjectionMode::Perspective => camera_controls.perspective_camera_entities[0],
-                ProjectionMode::Orthographic => camera_controls.orthographic_camera_entities[0],
+            let Ok(cam_entity) = active_camera_maybe(&active_cam) else {
+                return
             };
-
+            
             let mut zoom_changed = false;
             let mut existing_tiles = HashSet::new();
             for (_entity, tile) in &map_tiles {

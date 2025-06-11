@@ -30,6 +30,7 @@ pub use assets::*;
 // pub mod camera_controls;
 // pub use camera_controls::*;
 
+use rmf_site_camera::plugins::CameraControlsPlugin;
 pub use rmf_site_camera::*;
 
 pub use rmf_site_picking::*;

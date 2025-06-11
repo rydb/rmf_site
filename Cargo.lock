@@ -5234,6 +5234,8 @@ version = "0.1.0"
 name = "rmf_site_camera"
 version = "0.1.0"
 dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
  "bevy_app",
  "bevy_asset",
  "bevy_color",

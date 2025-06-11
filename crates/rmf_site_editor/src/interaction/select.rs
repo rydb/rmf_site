@@ -235,6 +235,7 @@ pub fn inspector_cursor_transform(
     orders: ContinuousQuery<(), ()>,
     cursor: Res<Cursor>,
     camera_controls: Res<CameraControls>,
+    active_cam: ActiveCameraQuery,
     pointers: Query<(&PointerId, &PointerInteraction)>,
     mut transforms: Query<&mut Transform>,
 ) {
@@ -246,13 +247,15 @@ pub fn inspector_cursor_transform(
         return;
     }
 
+    let Ok(active_cam) = active_camera_maybe(&active_cam) else {
+        return;
+    };
     let Some((_, interactions)) = pointers.single().ok() else {
         return;
     };
-    let active_camera = camera_controls.active_camera();
     let Some((position, normal)) = interactions
         .iter()
-        .find(|(_, hit_data)| hit_data.camera == active_camera)
+        .find(|(_, hit_data)| hit_data.camera == active_cam)
         .and_then(|(_, hit_data)| {
             hit_data
                 .position

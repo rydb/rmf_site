@@ -14,7 +14,7 @@ bevy_reflect = {workspace = true}
 bevy_transform = {workspace = true}
 bevy_pbr = {workspace = true}
 bevy_utils = {workspace = true}
-bevy_picking = {workspace = true}
+bevy_picking = {workspace = true, features = ["bevy_mesh_picking_backend"]}
 bevy_asset = {workspace = true}
 bevy_window = {workspace = true}
 bevy_input = {workspace = true}
@@ -24,3 +24,7 @@ bevy_derive = {workspace = true}
 rmf_site_picking = {workspace = true}
 tracing = {workspace = true}
 nalgebra = {workspace = true}
+
+[dev-dependencies]
+bevy = {workspace = true, features = ["dynamic_linking"]}
+bevy-inspector-egui = "*"

@@ -19,7 +19,7 @@ use bevy_color::{Color, Srgba};
 */
 use bevy_core_pipeline::{prelude::*, tonemapping::Tonemapping};
 use bevy_derive::{Deref, DerefMut};
-use bevy_ecs::prelude::*;
+use bevy_ecs::{prelude::*, query::QuerySingleError, system::SystemParam};
 use bevy_gizmos::gizmos::Gizmos;
 use bevy_pbr::{AmbientLight, DirectionalLight, MeshMaterial3d, StandardMaterial};
 use bevy_reflect::Reflect;
@@ -34,6 +34,7 @@ use bevy_utils::default;
 use bevy_app::prelude::*;
 
 use rmf_site_picking::{picking::PickingBlockers, visual_cue::{VISUAL_CUE_RENDER_LAYER, XRAY_RENDER_LAYER}};
+use tracing::warn;
 use utils::*;
 
 mod cursor;
@@ -42,13 +43,13 @@ use cursor::{update_cursor_command, CursorCommand};
 mod keyboard;
 use keyboard::{update_keyboard_command, KeyboardCommand};
 
-use crate::components::ProjectionMode;
+use crate::{components::{OrthographicCameraRoot, PerspectiveCameraRoot}, resources::ProjectionMode};
 
 
 pub mod plugins;
 mod systems;
-mod components;
-mod resources;
+pub mod components;
+pub mod resources;
 
 /// RenderLayers are used to inform cameras which entities they should render.
 /// The General render layer is for things that should be visible to all
@@ -116,29 +117,6 @@ pub enum CameraCommandType {
 #[derive(Default, Reflect)]
 struct OrbitCenterGizmo {}
 
-// impl ProjectionMode {
-//     pub fn is_perspective(&self) -> bool {
-//         matches!(self, Self::Perspective)
-//     }
-
-//     pub fn is_orthographic(&self) -> bool {
-//         matches!(self, Self::Orthographic)
-//     }
-// }
-
-// #[derive(Event)]
-// pub struct ChangeProjectionMode(pub ProjectionMode);
-
-// impl ChangeProjectionMode {
-//     pub fn to_perspective() -> ChangeProjectionMode {
-//         ChangeProjectionMode(ProjectionMode::Perspective)
-//     }
-
-//     pub fn to_orthographic() -> ChangeProjectionMode {
-//         ChangeProjectionMode(ProjectionMode::Orthographic)
-//     }
-// }
-
 #[derive(Debug, Clone, Reflect, Resource, Default)]
 pub struct CameraControls {
     // pub perspective_camera_entities: [Entity; 4],
@@ -156,5 +134,25 @@ pub struct HeadlightToggle(pub bool);
 impl Default for HeadlightToggle {
     fn default() -> Self {
         Self(true)
+    }
+}
+/// convienience [`SystemParam`] set for [`active_camera_maybe`]
+#[derive(SystemParam)]
+pub struct ActiveCameraQuery<'w, 's> {
+    pub proj_mode: Res<'w, ProjectionMode>, 
+    pub ortho_cam: Query<'w, 's, Entity, With<OrthographicCameraRoot>>, 
+    pub persp_cam: Query<'w, 's, Entity, With<PerspectiveCameraRoot>>
+}
+/// convienience method to get active camera and output a warning if it does't exist.
+pub fn active_camera_maybe(
+    active_cam: &ActiveCameraQuery
+) -> Result<Entity, QuerySingleError> {
+    match *active_cam.proj_mode {
+        ProjectionMode::Perspective =>  active_cam.persp_cam.single()
+        .inspect_err(|err| warn!("could not get active camera due to: {:#}", err))
+        ,
+        ProjectionMode::Orthographic => active_cam.ortho_cam.single()
+        .inspect_err(|err| warn!("could not get active camera due to: {:#}", err))
+        ,
     }
 }
