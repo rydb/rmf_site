@@ -1,9 +1,12 @@
+use bevy_impulse::{Service, StreamOf};
+use bevy_input::keyboard::KeyCode;
 use bevy_state::state::States;
 
 pub mod visual_cue;
 pub mod category_visibility;
 pub mod picking;
 pub mod select;
+pub mod plugins;
 
 use bevy_ecs::prelude::*;
 
@@ -31,4 +34,10 @@ impl Selectable {
             element,
         }
     }
+}
+
+/// (rydb) #TODO: move this into an rmf_site_controls crate. This is only here for the rmf_site_picking peel-off
+#[derive(Resource)]
+pub struct KeyboardServices {
+    pub keyboard_just_pressed: Service<(), (), StreamOf<KeyCode>>,
 }

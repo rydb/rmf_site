@@ -16,7 +16,8 @@ thiserror = {workspace = true}
 glam = { workspace = true, features = ["serde"] }
 uuid = { workspace = true, features = ["v4", "serde"] }
 # add features=["bevy"] to a dependent Cargo.toml to get the bevy-related features
-bevy = { workspace = true, optional = true }
+bevy = { workspace = true, optional = true}
+rmf_site_picking = {workspace = true, optional = true}
 sdformat_rs = { workspace = true }
 yaserde = {workspace = true}
 # We depend on a bugfix released specifically in 0.7.3
@@ -29,5 +30,6 @@ pathdiff = {workspace = true}
 float_eq = {workspace = true}
 
 [features]
+bevy = ["dep:bevy", "dep:rmf_site_picking"]
 urdf = ["dep:urdf-rs"]
 default = ["urdf"]

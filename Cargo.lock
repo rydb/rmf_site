@@ -5254,7 +5254,6 @@ dependencies = [
  "bevy_utils",
  "bevy_window",
  "nalgebra",
- "rmf_site_picking",
  "tracing",
 ]
 
@@ -5320,6 +5319,7 @@ dependencies = [
  "glam",
  "once_cell",
  "pathdiff",
+ "rmf_site_picking",
  "ron 0.10.1",
  "sdformat_rs",
  "serde",

@@ -33,6 +33,7 @@ pub use assets::*;
 use rmf_site_camera::plugins::CameraControlsPlugin;
 pub use rmf_site_camera::*;
 
+use rmf_site_picking::plugins::ProjectPickingPlugin;
 pub use rmf_site_picking::*;
 
 pub use rmf_site_picking::category_visibility::*;
@@ -138,12 +139,9 @@ impl Plugin for InteractionPlugin {
                 Update,
                 ApplyDeferred.in_set(InteractionUpdateSet::CommandFlush),
             )
-            .add_plugins(MeshPickingPlugin)
+            .add_plugins(ProjectPickingPlugin)
             .init_resource::<InteractionAssets>()
             .init_resource::<Cursor>()
-            .init_resource::<CameraControls>()
-            .init_resource::<Picked>()
-            .init_resource::<PickingBlockers>()
             .init_resource::<GizmoState>()
             .init_resource::<CurrentEditDrawing>()
             .init_resource::<CurrentLevel>()

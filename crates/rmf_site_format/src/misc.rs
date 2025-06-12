@@ -480,14 +480,6 @@ pub struct Parented<P: RefTrait, T> {
     pub bundle: T,
 }
 
-/// The Pending component indicates that an element is not yet ready to be
-/// saved to file. We will filter out these elements while assigning SiteIDs,
-/// and that will prevent them from being included while collecting elements
-/// into the Site data structure.
-#[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "bevy", derive(Component))]
-pub struct Pending;
-
 /// The Original component indicates that an element is being modified but not
 /// yet in a state where it can be correctly saved. We should save the original
 /// value instead of the apparent current value.

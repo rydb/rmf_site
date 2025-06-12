@@ -14,6 +14,7 @@ impl Plugin for CameraControlsPlugin {
         .init_resource::<CameraOrbitMat>()
         .init_resource::<CameraControlMesh>()
         .init_resource::<CameraControlPanMaterial>()
+        .init_resource::<ProjectionMode>()
         .add_systems(PostStartup, init_cameras)
         .add_systems(Update, toggle_headlights.run_if(resource_changed::<HeadlightToggle>))
         .add_systems(Update, change_projection_mode.run_if(resource_changed::<ProjectionMode>))

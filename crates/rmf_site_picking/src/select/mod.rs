@@ -4,21 +4,27 @@ use std::error::Error;
 
 use bevy_derive::{Deref, DerefMut};
 pub use bevy_ecs::prelude::*;
+use bevy_ecs::system::ScheduleSystem;
 use bevy_ecs::system::StaticSystemParam;
 use bevy_impulse::flush_impulses;
 use bevy_impulse::AddContinuousServicesExt;
+use bevy_impulse::AddServicesExt;
 use bevy_impulse::BlockingService;
 use bevy_impulse::BlockingServiceInput;
 use bevy_impulse::BufferAccessMut;
 use bevy_impulse::BufferKey;
 use bevy_impulse::BufferSettings;
 use bevy_impulse::Builder;
+use bevy_impulse::Chain;
 use bevy_impulse::ContinuousQuery;
 use bevy_impulse::ContinuousServiceInput;
 use bevy_impulse::DeliverySettings;
+use bevy_impulse::IntoBlockingCallback;
 use bevy_impulse::IntoBlockingService;
+use bevy_impulse::QuickContinuousServiceBuild;
 use bevy_impulse::RequestExt;
 use bevy_impulse::RunCommandsOnWorldExt;
+use bevy_impulse::ScheduleConfigs;
 use bevy_impulse::Scope;
 use bevy_impulse::Service;
 use bevy_impulse::SpawnServicesExt;
@@ -38,6 +44,7 @@ use bevy_app::prelude::*;
 use crate::picking::ChangePick;
 use crate::picking::Picked;
 use crate::picking::PickingBlockers;
+use crate::KeyboardServices;
 use crate::Selectable;
 
 #[derive(Component)]
@@ -642,7 +649,9 @@ pub struct SelectionBasePlugin;
 
 impl Plugin for SelectionBasePlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(
+        app
+        .add_plugins(InspectorServicePlugin)
+        .configure_sets(
             Update,
             (
                 SelectionServiceStages::Pick,
@@ -699,4 +708,216 @@ pub struct InspectorService {
     pub inspector_select_service: Service<(), (), (Hover, Select)>,
     pub inspector_cursor_transform: Service<(), ()>,
     pub selection_update: Service<Select, ()>,
+}
+
+/// This allows an [`App`] to spawn a service that can stream Hover and
+/// Select events that are managed by a filter. This can only be used with
+/// [`App`] because some of the internal services are continuous, so they need
+/// to be added to the schedule.
+pub trait SpawnSelectionServiceExt {
+    fn spawn_selection_service<F: SystemParam + 'static>(
+        &mut self,
+    ) -> Service<(), (), (Hover, Select)>
+    where
+        for<'w, 's> F::Item<'w, 's>: SelectionFilter;
+}
+
+impl SpawnSelectionServiceExt for App {
+    fn spawn_selection_service<F: SystemParam + 'static>(
+        &mut self,
+    ) -> Service<(), (), (Hover, Select)>
+    where
+        for<'w, 's> F::Item<'w, 's>: SelectionFilter,
+    {
+        let picking_service = self.spawn_continuous_service(
+            Update,
+            picking_service::<F>.configure(|config: ScheduleConfigs<ScheduleSystem>| {
+                config.in_set(SelectionServiceStages::Pick)
+            }),
+        );
+
+        let hover_service = self.spawn_continuous_service(
+            Update,
+            hover_service::<F>.configure(|config: ScheduleConfigs<ScheduleSystem>| {
+                config.in_set(SelectionServiceStages::Hover)
+            }),
+        );
+
+        let select_service = self.spawn_continuous_service(
+            Update,
+            select_service::<F>.configure(|config: ScheduleConfigs<ScheduleSystem>| {
+                config.in_set(SelectionServiceStages::Select)
+            }),
+        );
+
+        self.world_mut()
+            .spawn_workflow::<_, _, (Hover, Select), _>(|scope, builder| {
+                let hover = builder.create_node(hover_service);
+                builder.connect(hover.streams, scope.streams.0);
+                builder.connect(hover.output, scope.terminate);
+
+                let select = builder.create_node(select_service);
+                builder.connect(select.streams, scope.streams.1);
+                builder.connect(select.output, scope.terminate);
+
+                // Activate all the services at the start
+                scope.input.chain(builder).fork_clone((
+                    |chain: Chain<_>| {
+                        chain
+                            .then(refresh_picked.into_blocking_callback())
+                            .then(picking_service)
+                            .connect(scope.terminate)
+                    },
+                    |chain: Chain<_>| chain.connect(hover.input),
+                    |chain: Chain<_>| chain.connect(select.input),
+                ));
+
+                // This is just a dummy buffer to let us have a cleanup workflow
+                let buffer = builder.create_buffer::<()>(BufferSettings::keep_all());
+                builder.on_cleanup(buffer, |scope, builder| {
+                    scope
+                        .input
+                        .chain(builder)
+                        .trigger()
+                        .then(clear_hover_select.into_blocking_callback())
+                        .connect(scope.terminate);
+                });
+            })
+    }
+}
+
+/// Update the virtual cursor (dagger and circle) transform while in inspector mode
+pub fn inspector_cursor_transform(
+    In(ContinuousService { key }): ContinuousServiceInput<(), ()>,
+    orders: ContinuousQuery<(), ()>,
+    // cursor: Res<Cursor>,
+    camera_controls: Res<CameraControls>,
+    active_cam: ActiveCameraQuery,
+    pointers: Query<(&PointerId, &PointerInteraction)>,
+    mut transforms: Query<&mut Transform>,
+) {
+    let Some(orders) = orders.view(&key) else {
+        return;
+    };
+
+    if orders.is_empty() {
+        return;
+    }
+
+    let Ok(active_cam) = active_camera_maybe(&active_cam) else {
+        return;
+    };
+    let Some((_, interactions)) = pointers.single().ok() else {
+        return;
+    };
+    let Some((position, normal)) = interactions
+        .iter()
+        .find(|(_, hit_data)| hit_data.camera == active_cam)
+        .and_then(|(_, hit_data)| {
+            hit_data
+                .position
+                .zip(hit_data.normal.and_then(|n| Dir3::new(n).ok()))
+        })
+    else {
+        return;
+    };
+
+    let mut transform = match transforms.get_mut(cursor.frame) {
+        Ok(transform) => transform,
+        Err(_) => {
+            return;
+        }
+    };
+
+    let ray = Ray3d::new(position, normal);
+    *transform = Transform::from_matrix(Mat4::from_rotation_translation(
+        Quat::from_rotation_arc(Vec3::new(0., 0., 1.), *ray.direction),
+        ray.origin,
+    ));
+}
+
+#[derive(Default)]
+pub struct InspectorServicePlugin;
+
+impl Plugin for InspectorServicePlugin {
+    fn build(&self, app: &mut App) {
+        let inspector_select_service = app.spawn_selection_service::<InspectorFilter>();
+        let inspector_cursor_transform = app.spawn_continuous_service(
+            Update,
+            inspector_cursor_transform.configure(|config: ScheduleConfigs<ScheduleSystem>| {
+                config.in_set(SelectionServiceStages::Pick)
+            }),
+        );
+        let selection_update = app.spawn_service(selection_update);
+        let keyboard_just_pressed = app
+            .world()
+            .resource::<KeyboardServices>()
+            .keyboard_just_pressed;
+
+        let inspector_service = app.world_mut().spawn_workflow(|scope, builder| {
+            let fork_input = scope.input.fork_clone(builder);
+            fork_input
+                .clone_chain(builder)
+                .then(inspector_cursor_transform)
+                .unused();
+            fork_input
+                .clone_chain(builder)
+                .then_node(keyboard_just_pressed)
+                .streams
+                .chain(builder)
+                .inner()
+                .then(deselect_on_esc.into_blocking_callback())
+                .unused();
+            let selection = fork_input
+                .clone_chain(builder)
+                .then_node(inspector_select_service);
+            selection
+                .streams
+                .1
+                .chain(builder)
+                .then(selection_update)
+                .unused();
+            builder.connect(selection.output, scope.terminate);
+        });
+
+        app.world_mut().insert_resource(InspectorService {
+            inspector_service,
+            inspector_select_service,
+            inspector_cursor_transform,
+            selection_update,
+        });
+    }
+}
+
+/// A unit component that indicates the entity is only for previewing and
+/// should never be interacted with. This is applied to the "anchor" that is
+/// attached to the cursor.
+#[derive(Component, Clone, Copy, Debug)]
+pub struct Preview;
+
+/// The Pending component indicates that an element is not yet ready to be
+/// saved to file. We will filter out these elements while assigning SiteIDs,
+/// and that will prevent them from being included while collecting elements
+/// into the Site data structure.
+#[derive(Debug, Clone, Copy, Component)]
+pub struct Pending;
+
+#[derive(SystemParam)]
+pub struct InspectorFilter<'w, 's> {
+    selectables: Query<'w, 's, &'static Selectable, (Without<Preview>, Without<Pending>)>,
+}
+
+impl<'w, 's> SelectionFilter for InspectorFilter<'w, 's> {
+    fn filter_pick(&mut self, select: Entity) -> Option<Entity> {
+        self.selectables
+            .get(select)
+            .ok()
+            .map(|selectable| selectable.element)
+    }
+    fn filter_select(&mut self, target: Entity) -> Option<Entity> {
+        Some(target)
+    }
+    fn on_click(&mut self, hovered: Hover) -> Option<Select> {
+        Some(Select::new(hovered.0))
+    }
 }

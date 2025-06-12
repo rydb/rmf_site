@@ -195,15 +195,16 @@ pub fn camera_controls(
     mut bevy_cameras: Query<&mut Camera>,
     mut visibility: Query<&mut Visibility>,
     headlight_toggle: Res<HeadlightToggle>,
-    picking_blockers: Res<PickingBlockers>,
+    // picking_blockers: Res<PickingBlockers>,
     projection_mode: Res<ProjectionMode>,
     perspective_cam_root: Query<(Entity, &Children), With<PerspectiveCameraRoot>>,
     orthographic_cam_root: Query<(Entity, &Children), With<OrthographicCameraRoot>>,
 ) {
-    // give input priority to ui elements
-    if picking_blockers.ui {
-        return;
-    }
+    //TODO: Find alternative for this that doesn't result in circular dependencies.
+    // // give input priority to ui elements
+    // if picking_blockers.ui {
+    //     return;
+    // }
 
     let translation_delta: Vec3;
     let rotation_delta: Quat;

@@ -58,8 +58,9 @@ impl FromWorld for CameraControlPanMaterial {
     }
 }
 
-#[derive(PartialEq, Debug, Copy, Clone, Reflect, Resource)]
+#[derive(PartialEq, Debug, Copy, Clone, Reflect, Resource, Default)]
 pub enum ProjectionMode {
+    #[default]
     Perspective,
     Orthographic,
 }

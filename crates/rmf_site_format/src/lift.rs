@@ -22,6 +22,9 @@ use bevy::{
     prelude::{Bundle, Component, Deref, DerefMut, Entity, Query, With, Without},
     render::primitives::Aabb,
 };
+#[cfg(feature = "bevy")]
+use rmf_site_picking::select::Pending;
+
 use glam::{Vec2, Vec3};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
