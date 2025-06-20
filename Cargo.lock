@@ -5386,6 +5386,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "rmf_site_picking"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_app",
+ "bevy_derive",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_impulse",
+ "bevy_input",
+ "bevy_picking",
+ "bevy_render",
+ "bevy_state",
+ "bevy_transform",
+ "bitfield 0.15.0",
+ "smallvec",
+ "tracing",
+]
+
+[[package]]
 name = "robust"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
